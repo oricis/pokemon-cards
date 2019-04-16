@@ -1,28 +1,82 @@
-<template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
-  </div>
+<template lang="pug">
+  div
+    h1.title Pokemon Cards!
+    .list
+      template(v-for="(item, index) in items")
+        PokemonCard(:pokemon="item" :key="index" :index="index + 1")
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
+import PokemonCard from './components/pokemonCard.vue';
 export default {
-  name: 'app',
-  components: {
-    HelloWorld
+  components: {'PokemonCard': PokemonCard},
+  data() {
+    return {
+      bottom: false,
+      items: []
+    }
+  },
+  created() {
+    window.addEventListener('scroll', () => {
+      const scrollY = window.scrollY;
+      const visibleHeight = window.innerHeight;
+      const pageLength = document.documentElement.scrollHeight;
+      // console.log({visibleHeight, scrollY, pageLength})
+      if (scrollY + visibleHeight >= Math.floor(pageLength * .9)) {
+        this.bottom = true;
+      } else {
+        this.bottom = false;
+      }
+    })
+    this.addPokemon();
+  },
+  watch: {
+    bottom(bottom) {
+      if (bottom) {
+        this.addPokemon();
+      }
+    }
+  },
+  methods: {
+    addPokemon() {
+      // console.log('adding pokemon')
+      if (this.next) {
+        fetch(this.next)
+        .then(res => res.json())
+        .then(res => {
+          this.items = [...this.items, ...res.results.map(pokemon => pokemon)];
+          this.next = res.next;
+        })
+        .catch(err => console.log(err))
+      } else {
+        fetch('https://pokeapi.co/api/v2/pokemon/?offset=0&limit=30')
+        .then(res => res.json())
+        .then(res => {
+          this.items = res.results.map(pokemon => pokemon);
+          this.next = res.next;
+        })
+        .catch(err => console.log(err))
+      }
+    }
   }
 }
 </script>
 
 <style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+.list {
+  max-width: 1200px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-gap: 10px;
+  margin: auto;
 }
+
+* {
+  font-family: sans-serif;
+}
+
+h1.title {
+  text-align: center;
+}
+
 </style>
