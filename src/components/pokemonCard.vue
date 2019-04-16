@@ -14,6 +14,9 @@ export default {
     }
   },
   props: ['pokemon', 'index'],
+  created() {
+    console.log(this.index)
+  },
   methods: {
     getInfo() {
       fetch(`https://pokeapi.co/api/v2/pokemon-species/${this.index}/`)

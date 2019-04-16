@@ -2,8 +2,8 @@
   div
     h1.title Pokemon Cards!
     .list
-      template(v-for="(item, index) in items")
-        PokemonCard(:pokemon="item" :key="index" :index="index + 1")
+      template(v-for="item in items")
+        PokemonCard(:pokemon="item" :key="index" :index="item.index")
 </template>
 
 <script>
@@ -13,7 +13,8 @@ export default {
   data() {
     return {
       bottom: false,
-      items: []
+      items: [],
+      next: 'initial'
     }
   },
   created() {
@@ -22,7 +23,7 @@ export default {
       const visibleHeight = window.innerHeight;
       const pageLength = document.documentElement.scrollHeight;
       // console.log({visibleHeight, scrollY, pageLength})
-      if (scrollY + visibleHeight >= Math.floor(pageLength * .9)) {
+      if (scrollY + visibleHeight >= Math.floor(pageLength * .95) || scrollY + visibleHeight >= pageLength) {
         this.bottom = true;
       } else {
         this.bottom = false;
@@ -40,19 +41,32 @@ export default {
   methods: {
     addPokemon() {
       // console.log('adding pokemon')
-      if (this.next) {
+      if (this.next !== 'initial' && this.next) {
         fetch(this.next)
         .then(res => res.json())
         .then(res => {
-          this.items = [...this.items, ...res.results.map(pokemon => pokemon)];
+          this.items = [
+            ...this.items,
+            ...res.results.map(pokemon => {
+              pokemon.index = pokemon.url.slice(34, -1);
+              return pokemon
+            })
+          ];
           this.next = res.next;
         })
         .catch(err => console.log(err))
-      } else {
+      } else if(this.next === "initial") {
         fetch('https://pokeapi.co/api/v2/pokemon/?offset=0&limit=30')
         .then(res => res.json())
         .then(res => {
-          this.items = res.results.map(pokemon => pokemon);
+          console.log(res)
+          this.items = [
+            ...this.items,
+            ...res.results.map(pokemon => {
+              pokemon.index = pokemon.url.slice(34, -1);
+              return pokemon
+            })
+          ];
           this.next = res.next;
         })
         .catch(err => console.log(err))
