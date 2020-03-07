@@ -1,5 +1,10 @@
 # pokemon-inf-scroll
 
+Project with ***vue.js***
+
+[Demo](https://leewarrick.com/pokemon-cards/)
+
+
 ## Project setup
 ```
 yarn install
